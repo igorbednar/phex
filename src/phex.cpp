@@ -1,9 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <iomanip>
 
 constexpr int NUM_OF_BYTES_PER_LINE = 16;
 
