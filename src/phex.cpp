@@ -46,10 +46,9 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    std::string fileName = argv[1];
     try
     {
-        printFileAsHex(fileName);
+        printFileAsHex(argv[1]);
     }
     catch (const std::exception &ex)
     {
