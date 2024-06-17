@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iomanip>
 
-constexpr int NUM_OF_SYMBOLS_PER_LINE = 16;
+constexpr int NUM_OF_BYTES_PER_LINE = 16;
 
 bool printFileAsHex(const std::string &fileName)
 {
@@ -22,7 +22,7 @@ bool printFileAsHex(const std::string &fileName)
     {
         std::cout << std::setw(2) << static_cast<int>(byte) << ' ';
         byteCount++;
-        if (byteCount == NUM_OF_SYMBOLS_PER_LINE)
+        if (byteCount == NUM_OF_BYTES_PER_LINE)
         {
             std::cout << std::endl;
             byteCount = 0;
