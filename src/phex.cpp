@@ -1,21 +1,14 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
 
 constexpr int NUM_OF_BYTES_PER_LINE = 16;
+constexpr int CHUNK_SIZE = 4096;
 
-bool printFileAsHex(const std::string &fileName)
+void printBufferInHex(const std::vector<unsigned char> &buffer, int &byteCount)
 {
-    std::ifstream file(fileName, std::ios::binary);
-    if (!file)
-    {
-        throw std::runtime_error("Failed to open file: " + fileName);
-    }
-
-    std::cout << std::hex << std::setfill('0');
-    unsigned char byte;
-    int byteCount = 0;
-    while (file.read(reinterpret_cast<char *>(&byte), sizeof(byte)))
+    for (const auto &byte : buffer)
     {
         std::cout << std::setw(2) << static_cast<int>(byte) << ' ';
         byteCount++;
@@ -25,9 +18,30 @@ bool printFileAsHex(const std::string &fileName)
             byteCount = 0;
         }
     }
+}
+
+void printFileInHex(const std::string &fileName)
+{
+    std::ifstream file(fileName, std::ios::binary);
+    if (!file)
+    {
+        throw std::runtime_error("Failed to open file: " + fileName);
+    }
+
+    std::cout << std::hex << std::setfill('0');
+    std::vector<unsigned char> buffer(CHUNK_SIZE);
+    int byteCount = 0;
+    bool dataRead = true;
+    file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
+    while (file.gcount())
+    {
+        buffer.resize(file.gcount());
+        printBufferInHex(buffer, byteCount);
+        buffer.resize(CHUNK_SIZE);
+        file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
+    }
 
     std::cout << std::endl;
-    return true;
 }
 
 void printUsage(std::string_view programName)
@@ -45,7 +59,7 @@ int main(int argc, char *argv[])
 
     try
     {
-        printFileAsHex(argv[1]);
+        printFileInHex(argv[1]);
     }
     catch (const std::exception &ex)
     {
