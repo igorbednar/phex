@@ -5,17 +5,35 @@
 
 constexpr int NUM_OF_BYTES_PER_LINE = 16;
 constexpr int CHUNK_SIZE = 4096;
+constexpr int ADDRESS_SIZE = 8; // 4*8 = 32 bits
 
-void printBufferInHex(const std::vector<unsigned char> &buffer, int &byteCount)
+bool isPrintable(unsigned char byte)
 {
+    return byte >= 0x20 && byte <= 0x7E;
+}
+
+void printBufferInHex(const std::vector<unsigned char> &buffer, unsigned int &address)
+{
+    std::vector<unsigned char> printable(NUM_OF_BYTES_PER_LINE);
     for (const auto &byte : buffer)
     {
-        std::cout << std::setw(2) << static_cast<int>(byte) << ' ';
-        byteCount++;
-        if (byteCount == NUM_OF_BYTES_PER_LINE)
+        if (address % NUM_OF_BYTES_PER_LINE == 0)
         {
-            std::cout << std::endl;
-            byteCount = 0;
+            std::cout << std::setw(ADDRESS_SIZE) << address << ": ";
+        }
+
+        std::cout << std::setw(2) << static_cast<int>(byte) << " ";
+        printable[address % NUM_OF_BYTES_PER_LINE] = '.';
+
+        if (isPrintable(byte))
+        {
+            printable[address % NUM_OF_BYTES_PER_LINE] = byte;
+        }
+        address++;
+
+        if (address % NUM_OF_BYTES_PER_LINE == 0)
+        {
+            std::cout << " " << printable.data() << std::endl;
         }
     }
 }
@@ -30,13 +48,12 @@ void printFileInHex(const std::string &fileName)
 
     std::cout << std::hex << std::setfill('0');
     std::vector<unsigned char> buffer(CHUNK_SIZE);
-    int byteCount = 0;
-    bool dataRead = true;
+    unsigned int address = 0;
     file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
     while (file.gcount())
     {
         buffer.resize(file.gcount());
-        printBufferInHex(buffer, byteCount);
+        printBufferInHex(buffer, address);
         buffer.resize(CHUNK_SIZE);
         file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
     }
