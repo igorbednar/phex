@@ -12,11 +12,11 @@ bool isPrintable(unsigned char byte)
     return byte >= 0x20 && byte <= 0x7E;
 }
 
-void printRemainingTextBuffer(const std::vector<unsigned char> &buffer, std::vector<unsigned char> &text)
+void printRemainingTextBuffer(unsigned int address, std::vector<unsigned char> &text)
 {
-    if (buffer.size() != CHUNK_SIZE)
+    if (address % NUM_OF_BYTES_PER_LINE != 0)
     {
-        for (int i = buffer.size() % NUM_OF_BYTES_PER_LINE; i < NUM_OF_BYTES_PER_LINE; i++)
+        for (int i = address % NUM_OF_BYTES_PER_LINE; i < NUM_OF_BYTES_PER_LINE; i++)
         {
             std::cout << "   ";
         }
@@ -24,9 +24,8 @@ void printRemainingTextBuffer(const std::vector<unsigned char> &buffer, std::vec
     }
 }
 
-void printBufferInHex(const std::vector<unsigned char> &buffer, unsigned int &address)
+void printBufferInHex(const std::vector<unsigned char> &buffer, std::vector<unsigned char> &printable, unsigned int &address)
 {
-    std::vector<unsigned char> printable(NUM_OF_BYTES_PER_LINE);
     for (const auto &byte : buffer)
     {
         auto row = address % NUM_OF_BYTES_PER_LINE;
@@ -50,8 +49,6 @@ void printBufferInHex(const std::vector<unsigned char> &buffer, unsigned int &ad
             printable.assign(NUM_OF_BYTES_PER_LINE, ' ');
         }
     }
-
-    printRemainingTextBuffer(buffer, printable);
 }
 
 void printFileInHex(const std::string &fileName)
@@ -64,17 +61,17 @@ void printFileInHex(const std::string &fileName)
 
     std::cout << std::hex << std::setfill('0');
     std::vector<unsigned char> buffer(CHUNK_SIZE);
+    std::vector<unsigned char> printable(NUM_OF_BYTES_PER_LINE);
     unsigned int address = 0;
     file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
     while (file.gcount())
     {
         buffer.resize(file.gcount());
-        printBufferInHex(buffer, address);
+        printBufferInHex(buffer, printable, address);
         buffer.resize(CHUNK_SIZE);
         file.read(reinterpret_cast<char *>(buffer.data()), buffer.size());
     }
-
-    std::cout << std::endl;
+    printRemainingTextBuffer(address, printable);
 }
 
 void printUsage(std::string_view programName)
