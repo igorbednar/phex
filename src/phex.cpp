@@ -7,7 +7,7 @@ constexpr int NUM_OF_BYTES_PER_LINE = 16;
 constexpr int CHUNK_SIZE = 4096;
 constexpr int ADDRESS_SIZE = 8; // 4*8 = 32 bits
 
-bool isPrintable(char byte)
+bool isPrintable(unsigned char byte)
 {
     return byte >= 0x20 && byte <= 0x7E;
 }
