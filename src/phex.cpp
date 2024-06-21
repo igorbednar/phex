@@ -7,9 +7,21 @@ constexpr int NUM_OF_BYTES_PER_LINE = 16;
 constexpr int CHUNK_SIZE = 4096;
 constexpr int ADDRESS_SIZE = 8; // 4*8 = 32 bits
 
-bool isPrintable(unsigned char byte)
+bool isPrintable(char byte)
 {
     return byte >= 0x20 && byte <= 0x7E;
+}
+
+void printRemainingTextBuffer(const std::vector<unsigned char> &buffer, std::vector<unsigned char> &text)
+{
+    if (buffer.size() != CHUNK_SIZE)
+    {
+        for (int i = buffer.size() % NUM_OF_BYTES_PER_LINE; i < NUM_OF_BYTES_PER_LINE; i++)
+        {
+            std::cout << "   ";
+        }
+        std::cout << " " << text.data() << std::endl;
+    }
 }
 
 void printBufferInHex(const std::vector<unsigned char> &buffer, unsigned int &address)
@@ -17,25 +29,29 @@ void printBufferInHex(const std::vector<unsigned char> &buffer, unsigned int &ad
     std::vector<unsigned char> printable(NUM_OF_BYTES_PER_LINE);
     for (const auto &byte : buffer)
     {
-        if (address % NUM_OF_BYTES_PER_LINE == 0)
+        auto row = address % NUM_OF_BYTES_PER_LINE;
+        if (row == 0)
         {
             std::cout << std::setw(ADDRESS_SIZE) << address << ": ";
         }
 
         std::cout << std::setw(2) << static_cast<int>(byte) << " ";
-        printable[address % NUM_OF_BYTES_PER_LINE] = '.';
+        printable[row] = '.';
 
         if (isPrintable(byte))
         {
-            printable[address % NUM_OF_BYTES_PER_LINE] = byte;
+            printable[row] = byte;
         }
         address++;
 
         if (address % NUM_OF_BYTES_PER_LINE == 0)
         {
             std::cout << " " << printable.data() << std::endl;
+            printable.assign(NUM_OF_BYTES_PER_LINE, ' ');
         }
     }
+
+    printRemainingTextBuffer(buffer, printable);
 }
 
 void printFileInHex(const std::string &fileName)
